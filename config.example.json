@@ -1,0 +1,11 @@
+{
+  "users": {
+    "123456789": {
+      "name": "Your Name",
+      "calendars": ["primary"],
+      "notifyTime": "20:00",
+      "timezone": "Asia/Singapore"
+    }
+  },
+  "allowedUserIds": ["123456789"]
+}
