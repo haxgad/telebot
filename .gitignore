@@ -141,3 +141,6 @@ vite.config.ts.timestamp-*
 # Config with secrets
 config.json
 .env
+
+# Claude Code instructions
+CLAUDE.md

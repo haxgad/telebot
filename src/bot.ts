@@ -1,4 +1,4 @@
-import { Bot, InlineKeyboard, Context } from "grammy";
+import { Bot, Context } from "grammy";
 import { loadConfig, isUserAllowed, getUserConfig } from "./config.js";
 import { getEventsForDay, getAuthUrl, listCalendars } from "./calendar.js";
 import { formatEventsMessage } from "./format.js";
@@ -28,15 +28,21 @@ export function createBot(): Bot {
     await ctx.reply(
       `Hi ${name}! I'm your calendar bot.\n\n` +
         "Commands:\n" +
-        "/cal - View today's or tomorrow's events\n" +
+        "/today - View today's events\n" +
+        "/tomorrow - View tomorrow's events\n" +
         "/setup - Link your Google Calendar\n" +
         "/calendars - Choose which calendars to show"
     );
   });
 
-  // /cal command - show inline buttons
-  bot.command("cal", async (ctx) => {
-    const userConfig = getUserConfig(ctx.from!.id);
+  // Helper to fetch and send events for a given day
+  async function sendEventsForDay(
+    ctx: Context,
+    dayOffset: 0 | 1,
+    label: "Today" | "Tomorrow"
+  ) {
+    const userId = ctx.from!.id;
+    const userConfig = getUserConfig(userId);
 
     if (!userConfig?.googleRefreshToken) {
       await ctx.reply(
@@ -45,55 +51,33 @@ export function createBot(): Bot {
       return;
     }
 
-    const keyboard = new InlineKeyboard()
-      .text("Today", "cal:today")
-      .text("Tomorrow", "cal:tomorrow");
-
-    await ctx.reply("Which day?", { reply_markup: keyboard });
-  });
-
-  // Handle calendar button callbacks
-  bot.callbackQuery(/^cal:(today|tomorrow)$/, async (ctx) => {
-    await ctx.answerCallbackQuery();
-
-    const userId = ctx.from.id;
-    const userConfig = getUserConfig(userId);
-
-    if (!userConfig) {
-      await ctx.editMessageText("User configuration not found.");
-      return;
-    }
-
-    const match = ctx.callbackQuery.data.match(/^cal:(today|tomorrow)$/);
-    const dayChoice = match?.[1] as "today" | "tomorrow";
-
-    const now = new Date();
-    const targetDate = new Date(now);
-
-    if (dayChoice === "tomorrow") {
+    const targetDate = new Date();
+    if (dayOffset === 1) {
       targetDate.setDate(targetDate.getDate() + 1);
     }
 
     try {
-      await ctx.editMessageText("Fetching events...");
-
       const events = await getEventsForDay(userId, targetDate);
-      const label = dayChoice === "today" ? "Today" : "Tomorrow";
       const message = formatEventsMessage(
         events,
         targetDate,
         label,
         userConfig.timezone
       );
-
-      await ctx.editMessageText(message);
+      await ctx.reply(message);
     } catch (error) {
       console.error("Failed to fetch events:", error);
-      await ctx.editMessageText(
+      await ctx.reply(
         "Failed to fetch events. Please try again or use /setup to re-link your calendar."
       );
     }
-  });
+  }
+
+  // /today command
+  bot.command("today", (ctx) => sendEventsForDay(ctx, 0, "Today"));
+
+  // /tomorrow command
+  bot.command("tomorrow", (ctx) => sendEventsForDay(ctx, 1, "Tomorrow"));
 
   // /setup command - start OAuth flow
   bot.command("setup", async (ctx) => {
