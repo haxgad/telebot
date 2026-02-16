@@ -6,6 +6,7 @@ A simple personal Telegram bot that shows your Google Calendar events on demand,
 
 - `/today` - View today's events
 - `/tomorrow` - View tomorrow's events
+- `/week` - View next 7 days, grouped by day
 - `/calendars` - List available calendars and their IDs
 - `/setup` - Link your Google Calendar account
 - **Daily notifications** - Receive tomorrow's events at your configured time (default: 8 PM)
@@ -164,6 +165,7 @@ Requires `FLY_API_TOKEN` secret in your GitHub repository (added automatically b
 | `/start`     | Welcome message and command list       |
 | `/today`     | Show today's events                    |
 | `/tomorrow`  | Show tomorrow's events                 |
+| `/week`      | Show next 7 days                       |
 | `/setup`     | Get Google Calendar authorization link |
 | `/calendars` | List available calendars               |
 

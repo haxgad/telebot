@@ -53,3 +53,41 @@ export function formatEventsMessage(
 
   return message;
 }
+
+export function formatWeekEventsMessage(
+  eventsByDate: Map<string, CalendarEvent[]>,
+  timezone: string
+): string {
+  let message = "📅 Next 7 Days\n";
+  let totalEvents = 0;
+
+  for (const [dateKey, events] of eventsByDate) {
+    const date = new Date(dateKey + "T00:00:00");
+    const dateStr = formatDate(date, timezone);
+
+    message += `\n━━ ${dateStr} ━━\n`;
+
+    if (events.length === 0) {
+      message += "No events\n";
+      continue;
+    }
+
+    totalEvents += events.length;
+
+    const allDayEvents = events.filter((e) => e.isAllDay);
+    const timedEvents = events.filter((e) => !e.isAllDay);
+
+    for (const event of allDayEvents) {
+      message += `All day: ${event.title}\n`;
+    }
+
+    for (const event of timedEvents) {
+      const start = event.startTime ? formatTime(event.startTime, timezone) : "??:??";
+      message += `${start}  ${event.title}\n`;
+    }
+  }
+
+  message += `\n${totalEvents} event${totalEvents === 1 ? "" : "s"} this week`;
+
+  return message;
+}

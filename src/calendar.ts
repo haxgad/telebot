@@ -141,3 +141,97 @@ export async function getEventsForDay(
 
   return allEvents;
 }
+
+export async function getEventsForDateRange(
+  userId: number,
+  startDate: Date,
+  days: number
+): Promise<Map<string, CalendarEvent[]>> {
+  const userConfig = getUserConfig(userId);
+  if (!userConfig) {
+    throw new Error("User not found");
+  }
+
+  const auth = await getAuthenticatedClient(userId);
+  const calendar = google.calendar({ version: "v3", auth });
+
+  const rangeStart = new Date(startDate);
+  rangeStart.setHours(0, 0, 0, 0);
+
+  const rangeEnd = new Date(startDate);
+  rangeEnd.setDate(rangeEnd.getDate() + days);
+  rangeEnd.setHours(23, 59, 59, 999);
+
+  const allEvents: CalendarEvent[] = [];
+
+  for (const calendarId of userConfig.calendars) {
+    try {
+      const response = await calendar.events.list({
+        calendarId,
+        timeMin: rangeStart.toISOString(),
+        timeMax: rangeEnd.toISOString(),
+        singleEvents: true,
+        orderBy: "startTime",
+      });
+
+      const calendarInfo = await calendar.calendars.get({ calendarId });
+      const calendarName = calendarInfo.data.summary || calendarId;
+
+      const events = response.data.items || [];
+
+      for (const event of events) {
+        const isAllDay = !!event.start?.date;
+
+        allEvents.push({
+          id: event.id || "",
+          title: event.summary || "Untitled",
+          startTime: event.start?.dateTime
+            ? new Date(event.start.dateTime)
+            : event.start?.date
+              ? new Date(event.start.date)
+              : null,
+          endTime: event.end?.dateTime
+            ? new Date(event.end.dateTime)
+            : event.end?.date
+              ? new Date(event.end.date)
+              : null,
+          isAllDay,
+          calendarName,
+        });
+      }
+    } catch (error) {
+      console.error(`Failed to fetch events from calendar ${calendarId}:`, error);
+    }
+  }
+
+  // Group events by date
+  const eventsByDate = new Map<string, CalendarEvent[]>();
+
+  for (let i = 0; i < days; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    const dateKey = date.toISOString().split("T")[0];
+    eventsByDate.set(dateKey, []);
+  }
+
+  for (const event of allEvents) {
+    if (!event.startTime) continue;
+    const dateKey = event.startTime.toISOString().split("T")[0];
+    const dayEvents = eventsByDate.get(dateKey);
+    if (dayEvents) {
+      dayEvents.push(event);
+    }
+  }
+
+  // Sort events within each day
+  for (const [, events] of eventsByDate) {
+    events.sort((a, b) => {
+      if (a.isAllDay && !b.isAllDay) return -1;
+      if (!a.isAllDay && b.isAllDay) return 1;
+      if (!a.startTime || !b.startTime) return 0;
+      return a.startTime.getTime() - b.startTime.getTime();
+    });
+  }
+
+  return eventsByDate;
+}

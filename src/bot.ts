@@ -1,7 +1,7 @@
 import { Bot, Context } from "grammy";
 import { loadConfig, isUserAllowed, getUserConfig } from "./config.js";
-import { getEventsForDay, getAuthUrl, listCalendars } from "./calendar.js";
-import { formatEventsMessage } from "./format.js";
+import { getEventsForDay, getEventsForDateRange, getAuthUrl, listCalendars } from "./calendar.js";
+import { formatEventsMessage, formatWeekEventsMessage } from "./format.js";
 
 export function createBot(): Bot {
   const config = loadConfig();
@@ -30,6 +30,7 @@ export function createBot(): Bot {
         "Commands:\n" +
         "/today - View today's events\n" +
         "/tomorrow - View tomorrow's events\n" +
+        "/week - View next 7 days\n" +
         "/setup - Link your Google Calendar\n" +
         "/calendars - Choose which calendars to show"
     );
@@ -78,6 +79,30 @@ export function createBot(): Bot {
 
   // /tomorrow command
   bot.command("tomorrow", (ctx) => sendEventsForDay(ctx, 1, "Tomorrow"));
+
+  // /week command
+  bot.command("week", async (ctx) => {
+    const userId = ctx.from!.id;
+    const userConfig = getUserConfig(userId);
+
+    if (!userConfig?.googleRefreshToken) {
+      await ctx.reply(
+        "You haven't linked your Google Calendar yet. Use /setup to get started."
+      );
+      return;
+    }
+
+    try {
+      const eventsByDate = await getEventsForDateRange(userId, new Date(), 7);
+      const message = formatWeekEventsMessage(eventsByDate, userConfig.timezone);
+      await ctx.reply(message);
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+      await ctx.reply(
+        "Failed to fetch events. Please try again or use /setup to re-link your calendar."
+      );
+    }
+  });
 
   // /setup command - start OAuth flow
   bot.command("setup", async (ctx) => {
