@@ -64,5 +64,40 @@ export function startScheduler(bot: Bot): void {
       },
       { timezone: userConfig.timezone }
     );
+
+    // Schedule custom reminders
+    if (userConfig.reminders) {
+      for (const reminder of userConfig.reminders) {
+        if (!/^\d{2}:\d{2}$/.test(reminder.time)) {
+          console.log(`Skipping invalid reminder time: ${reminder.time}`);
+          continue;
+        }
+
+        const [rHour, rMinute] = reminder.time.split(":").map(Number);
+        if (rHour < 0 || rHour > 23 || rMinute < 0 || rMinute > 59) {
+          console.log(`Skipping invalid reminder time values: ${reminder.time}`);
+          continue;
+        }
+
+        const reminderCron = `${rMinute} ${rHour} * * *`;
+
+        console.log(
+          `Scheduling reminder for user ${userId} at ${reminder.time}: "${reminder.message}"`
+        );
+
+        cron.schedule(
+          reminderCron,
+          async () => {
+            try {
+              await bot.api.sendMessage(Number(userId), reminder.message);
+              console.log(`Sent reminder to user ${userId}: "${reminder.message}"`);
+            } catch (error) {
+              console.error(`Failed to send reminder to user ${userId}:`, error);
+            }
+          },
+          { timezone: userConfig.timezone }
+        );
+      }
+    }
   }
 }

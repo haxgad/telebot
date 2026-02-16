@@ -4,7 +4,13 @@
       "name": "Your Name",
       "calendars": ["primary"],
       "notifyTime": "20:00",
-      "timezone": "Asia/Singapore"
+      "timezone": "Asia/Singapore",
+      "reminders": [
+        {
+          "time": "15:45",
+          "message": "Your daily reminder message here"
+        }
+      ]
     }
   },
   "allowedUserIds": ["123456789"]

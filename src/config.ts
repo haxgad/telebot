@@ -2,12 +2,18 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import "dotenv/config";
 
+export interface Reminder {
+  time: string; // HH:MM format
+  message: string;
+}
+
 export interface UserConfig {
   name: string;
   googleRefreshToken: string;
   calendars: string[];
   notifyTime: string;
   timezone: string;
+  reminders?: Reminder[];
 }
 
 export interface Config {
