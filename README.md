@@ -9,7 +9,7 @@ A simple personal Telegram bot that shows your Google Calendar events on demand,
 - `/week` - View next 7 days, grouped by day
 - `/calendars` - List available calendars and their IDs
 - `/setup` - Link your Google Calendar account
-- **Daily notifications** - Receive tomorrow's events at your configured time (default: 8 PM)
+- **Daily notifications** - Receive tomorrow's events at your configured time (default: 8 PM). On Sundays, also includes a weekly summary
 - **Custom reminders** - Set daily reminders at specific times with custom messages
 - **Multiple calendars** - Aggregate events from work, personal, and other calendars
 - **Timezone-aware** - All times displayed in your configured timezone

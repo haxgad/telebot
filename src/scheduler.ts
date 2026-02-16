@@ -1,8 +1,8 @@
 import cron from "node-cron";
 import { Bot } from "grammy";
 import { loadConfig, getUserConfig } from "./config.js";
-import { getEventsForDay } from "./calendar.js";
-import { formatEventsMessage } from "./format.js";
+import { getEventsForDay, getEventsForDateRange } from "./calendar.js";
+import { formatEventsMessage, formatWeekEventsMessage } from "./format.js";
 
 export function startScheduler(bot: Bot): void {
   const config = loadConfig();
@@ -45,7 +45,8 @@ export function startScheduler(bot: Bot): void {
         console.log(`Running scheduled notification for user ${userId}`);
 
         try {
-          const tomorrow = new Date();
+          const now = new Date();
+          const tomorrow = new Date(now);
           tomorrow.setDate(tomorrow.getDate() + 1);
 
           const events = await getEventsForDay(Number(userId), tomorrow);
@@ -58,6 +59,14 @@ export function startScheduler(bot: Bot): void {
 
           await bot.api.sendMessage(Number(userId), message);
           console.log(`Sent notification to user ${userId}`);
+
+          // On Sundays, also send the week summary
+          if (now.getDay() === 0) {
+            const eventsByDate = await getEventsForDateRange(Number(userId), now, 7);
+            const weekMessage = formatWeekEventsMessage(eventsByDate, userConfig.timezone);
+            await bot.api.sendMessage(Number(userId), weekMessage);
+            console.log(`Sent weekly summary to user ${userId}`);
+          }
         } catch (error) {
           console.error(`Failed to send notification to user ${userId}:`, error);
         }
