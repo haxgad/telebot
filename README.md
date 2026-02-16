@@ -8,6 +8,7 @@ A personal Telegram bot that shows your Google Calendar events on demand and sen
 - `/calendars` - List available calendars and their IDs
 - `/setup` - Link your Google Calendar account
 - **Daily notifications** - Receive tomorrow's events at your configured time (default: 8 PM)
+- **Custom reminders** - Set daily reminders at specific times with custom messages
 - **Multiple calendars** - Aggregate events from work, personal, and other calendars
 - **Timezone-aware** - All times displayed in your configured timezone
 
@@ -69,7 +70,10 @@ Edit `config.json` with your settings:
       "name": "Your Name",
       "calendars": ["primary"],
       "notifyTime": "20:00",
-      "timezone": "Asia/Singapore"
+      "timezone": "Asia/Singapore",
+      "reminders": [
+        { "time": "15:45", "message": "Your reminder message" }
+      ]
     }
   },
   "allowedUserIds": ["YOUR_TELEGRAM_USER_ID"]
@@ -142,7 +146,7 @@ fly secrets set \
   GOOGLE_CLIENT_SECRET="xxx" \
   GOOGLE_REDIRECT_URI="http://localhost:3000/oauth/callback" \
   GOOGLE_REFRESH_TOKEN_123456789="xxx" \
-  CONFIG_JSON='{"users":{"123456789":{"name":"Your Name","calendars":["primary"],"notifyTime":"20:00","timezone":"Asia/Singapore"}},"allowedUserIds":["123456789"]}'
+  CONFIG_JSON='{"users":{"123456789":{"name":"Your Name","calendars":["primary"],"notifyTime":"20:00","timezone":"Asia/Singapore","reminders":[{"time":"15:45","message":"Your reminder"}]}},"allowedUserIds":["123456789"]}'
 
 # Deploy
 fly deploy
