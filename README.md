@@ -1,6 +1,6 @@
 # Telegram Calendar Bot
 
-A personal Telegram bot that shows your Google Calendar events on demand and sends daily evening notifications with tomorrow's schedule.
+A simple personal Telegram bot that shows your Google Calendar events on demand, sends daily evening notifications with tomorrow's schedule, and supports reminders.
 
 ## Features
 
@@ -71,9 +71,7 @@ Edit `config.json` with your settings:
       "calendars": ["primary"],
       "notifyTime": "20:00",
       "timezone": "Asia/Singapore",
-      "reminders": [
-        { "time": "15:45", "message": "Your reminder message" }
-      ]
+      "reminders": [{ "time": "15:45", "message": "Your reminder message" }]
     }
   },
   "allowedUserIds": ["YOUR_TELEGRAM_USER_ID"]
@@ -160,12 +158,12 @@ Requires `FLY_API_TOKEN` secret in your GitHub repository (added automatically b
 
 ## Bot Commands
 
-| Command | Description |
-|---------|-------------|
-| `/start` | Welcome message and command list |
-| `/cal` | Show today's or tomorrow's events |
-| `/setup` | Get Google Calendar authorization link |
-| `/calendars` | List available calendars |
+| Command      | Description                            |
+| ------------ | -------------------------------------- |
+| `/start`     | Welcome message and command list       |
+| `/cal`       | Show today's or tomorrow's events      |
+| `/setup`     | Get Google Calendar authorization link |
+| `/calendars` | List available calendars               |
 
 ## Project Structure
 
