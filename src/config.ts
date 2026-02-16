@@ -30,15 +30,25 @@ interface FileConfig {
 
 const CONFIG_PATH = join(process.cwd(), "config.json");
 
-export function loadConfig(): Config {
+function loadFileConfig(): FileConfig {
+  // Try CONFIG_JSON env var first (for production/Fly.io)
+  if (process.env.CONFIG_JSON) {
+    return JSON.parse(process.env.CONFIG_JSON) as FileConfig;
+  }
+
+  // Fall back to config.json file
   if (!existsSync(CONFIG_PATH)) {
     throw new Error(
-      "config.json not found. Copy config.example.json and fill in your values."
+      "config.json not found. Set CONFIG_JSON env var or copy config.example.json."
     );
   }
 
   const raw = readFileSync(CONFIG_PATH, "utf-8");
-  const fileConfig = JSON.parse(raw) as FileConfig;
+  return JSON.parse(raw) as FileConfig;
+}
+
+export function loadConfig(): Config {
+  const fileConfig = loadFileConfig();
 
   // Build users with refresh tokens from environment
   const users: Record<string, UserConfig> = {};
